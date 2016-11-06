@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>תוצאות בחירות 2015</title>
+<style>
+  .rotate {
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  }
+  #partiesList {
+    list-style-type: none;
+    width: 10em;
+  }
+  #partiesList li {
+    border: 1px solid black;
+    padding: 0.5em;
+    margin: 0.25em;
+    border-radius: 0.25em;
+    background-color: #eee;
+    cursor: move;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="http://rubaxa.github.io/Sortable/Sortable.js"></script>
+<script>
+  // With more than 10000 votes in the 2015 elections
+  var partiesVoteCount = {
+    "הליכוד": 985408,
+    "המחנה הציוני": 786313,
+    "הרשימה המשותפת": 446583,
+    "יש עתיד": 371602,
+    "כולנו": 315360,
+    "הבית היהודי": 283910,
+    "ש\"ס": 241613,
+    "ישראל ביתנו": 214906,
+    "יהדות התורה": 210143,
+    "מרצ": 165529,
+    "יחד": 125158,
+    "עלה ירוק": 47180
+  };
+
+  function drawAxis(ctx)
+  {
+    ctx.beginPath();
+    ctx.moveTo(0, 280);
+    ctx.lineTo(600, 280);
+    for (let i = -3; i <= 3; i++) {
+      ctx.moveTo(300 + i*80, 280);
+      ctx.lineTo(300 + i*80, 285);
+    }
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'center';
+    for (let i = -3; i <= 3; i++) {
+      ctx.fillText(i, 300 + i*80, 295);
+    }
+  }
+
+  function drawCurve(ctx)
+  {
+    ctx.beginPath();
+    ctx.moveTo(0, 280);
+    for (let i = 1; i < 600; i++) {
+      let x = (i - 300) / 80.0;
+      let y = Math.exp(-x*x / 2) / Math.sqrt(2 * Math.PI);
+      j = 280.0 - y * 600.0;
+      ctx.lineTo(i, j);
+    }
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  /* Credit: DeepSpace101's post on Stack Overflow,
+      http://stackoverflow.com/questions/8816729/javascript-equivalent-for-inverse-normal-function-eg-excels-normsinv-or-nor
+  */
+  function NormSInv(p) {
+      var a1 = -39.6968302866538, a2 = 220.946098424521, a3 = -275.928510446969;
+      var a4 = 138.357751867269, a5 = -30.6647980661472, a6 = 2.50662827745924;
+      var b1 = -54.4760987982241, b2 = 161.585836858041, b3 = -155.698979859887;
+      var b4 = 66.8013118877197, b5 = -13.2806815528857, c1 = -7.78489400243029E-03;
+      var c2 = -0.322396458041136, c3 = -2.40075827716184, c4 = -2.54973253934373;
+      var c5 = 4.37466414146497, c6 = 2.93816398269878, d1 = 7.78469570904146E-03;
+      var d2 = 0.32246712907004, d3 = 2.445134137143, d4 = 3.75440866190742;
+      var p_low = 0.02425, p_high = 1 - p_low;
+      var q, r;
+      var retVal;
+
+      if (p <= 0) {
+          retVal = -50.0;
+      }
+      else if (p >= 1)
+      {
+          retVal = 50.0;
+      }
+      else if (p < p_low)
+      {
+          q = Math.sqrt(-2 * Math.log(p));
+          retVal = (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+      }
+      else if (p <= p_high)
+      {
+          q = p - 0.5;
+          r = q * q;
+          retVal = (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q / (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+      }
+      else
+      {
+          q = Math.sqrt(-2 * Math.log(1 - p));
+          retVal = -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+      }
+      return retVal;
+  }
+
+  function drawAreas(ctx, parties)
+  {
+    var totalVotes = 0.0;
+    for (let i = 0; i < parties.length; i++) {
+      totalVotes += partiesVoteCount[parties[i]];
+    }
+
+    var start = 0.0, end = 0.0;
+    var color = '#bbf';
+    for (let i = 0; i < parties.length; i++) {
+      let partyName = parties[i];
+
+      // figure out start and end
+      start = end;
+      end += partiesVoteCount[partyName] / totalVotes;
+      startX = NormSInv(start);
+      endX = NormSInv(end);
+
+      // fill background color
+      ctx.beginPath();
+      ctx.moveTo(300 + startX * 80, 280);
+      for (let x = startX; x < endX; x += 0.01) {
+        let y = Math.exp(-x*x / 2) / Math.sqrt(2 * Math.PI);
+        ctx.lineTo(300 + x * 80, 280 - y * 600);
+      }
+      ctx.lineTo(300 + endX * 80, 280);
+      ctx.fillStyle = color;
+      ctx.lineWidth = 0;
+      ctx.fill();
+      color = (color === '#bbf') ? '#ddf' : '#bbf';
+
+      // draw separating line
+      ctx.beginPath();
+      ctx.moveTo(300 + startX * 80, 280);
+      let startY = Math.exp(-startX*startX / 2) / Math.sqrt(2 * Math.PI);
+      ctx.lineTo(300 + startX * 80, 280 - startY * 600);
+      ctx.strokeStyle = 'blue';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // name of the party
+      ctx.fillStyle = 'black';
+      ctx.font = '14px sans';
+      let left = Math.max(startX, Math.min(-2, endX - 1));
+      let right = Math.min(endX, Math.max(2, startX + 1));
+      let textX = (left + right) / 2;
+      let textY = Math.exp(-textX*textX / 2) / Math.sqrt(2 * Math.PI);
+      if (endX < 0) {
+        ctx.textAlign = 'right';
+      } else if (startX > 0) {
+        ctx.textAlign = 'left';
+      } else {
+        ctx.textAlign = 'center';
+        textY = 0.42;
+      }
+      ctx.fillText(partyName, 300 + textX * 80, 270 - textY * 600);
+    }
+  }
+
+  function updateDisplay()
+  {
+    var ctx = document.getElementById('canvas').getContext('2d');
+    ctx.clearRect(0, 0, 600, 300);
+
+    var parties = [];
+    $('#partiesList li').each(function(elt) {parties.push($(this).text());});
+    drawAreas(ctx, parties);
+    drawAxis(ctx);
+    drawCurve(ctx);
+  }
+
+  $(function() {
+    updateDisplay();
+    Sortable.create(document.getElementById('partiesList'),
+                    {onUpdate: updateDisplay});
+  })
+</script>
+</head>
+<body>
+<h1 style="text-align: center">בחירות 2015</h1>
+<div style="text-align: center">
+  <canvas id="canvas" width="600" height="300"></canvas>
+  <div>סטיות תקן</div>
+</div>
+<div style="direction: rtl">
+  <ul id="partiesList">
+    <li>הרשימה המשותפת</li>
+    <li>עלה ירוק</li>
+    <li>מרצ</li>
+    <li>המחנה הציוני</li>
+    <li>יש עתיד</li>
+    <li>כולנו</li>
+    <li>יהדות התורה</li>
+    <li>הליכוד</li>
+    <li>ש"ס</li>
+    <li>ישראל ביתנו</li>
+    <li>הבית היהודי</li>
+    <li>יחד</li>
+  </ul>
+</div>
+</body>
+</html>

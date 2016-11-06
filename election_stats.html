@@ -43,14 +43,16 @@
     "עלה ירוק": 47180
   };
 
-  function drawAxis(ctx)
+  function drawAxis(ctx, width, height)
   {
     ctx.beginPath();
-    ctx.moveTo(0, 280);
-    ctx.lineTo(600, 280);
-    for (let i = -3; i <= 3; i++) {
-      ctx.moveTo(300 + i*80, 280);
-      ctx.lineTo(300 + i*80, 285);
+    ctx.moveTo(0, height - 20);
+    ctx.lineTo(width, height - 20);
+    for (let i = -10; i <= 10; i++) {
+      if ((Math.abs(i) <= 3) || ((Math.abs(i) % 2) == 1)) {
+        ctx.moveTo(width/2 + i*80, height - 20);
+        ctx.lineTo(width/2 + i*80, height - 15);
+      }
     }
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 0.5;
@@ -58,19 +60,21 @@
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.font = '10px sans';
-    for (let i = -3; i <= 3; i++) {
-      ctx.fillText(i, 300 + i*80, 295);
+    for (let i = -10; i <= 10; i++) {
+      if ((Math.abs(i) <= 3) || ((Math.abs(i) % 2) == 1)) {
+        ctx.fillText(i, width/2 + i*80, height - 5);
+      }
     }
   }
 
-  function drawCurve(ctx)
+  function drawCurve(ctx, width, height)
   {
     ctx.beginPath();
-    ctx.moveTo(0, 280);
-    for (let i = 1; i < 600; i++) {
-      let x = (i - 300) / 80.0;
+    ctx.moveTo(0, height - 20);
+    for (let i = 1; i < width; i++) {
+      let x = (i - width / 2) / 80.0;
       let y = Math.exp(-x*x / 2) / Math.sqrt(2 * Math.PI);
-      j = 280.0 - y * 600.0;
+      j = height - 20 - y * (height - 50) * 2.5;
       ctx.lineTo(i, j);
     }
     ctx.strokeStyle = 'blue';
@@ -119,7 +123,7 @@
       return retVal;
   }
 
-  function drawAreas(ctx, parties)
+  function drawAreas(ctx, width, height, parties)
   {
     var totalVotes = 0.0;
     for (let i = 0; i < parties.length; i++) {
@@ -139,12 +143,12 @@
 
       // fill background color
       ctx.beginPath();
-      ctx.moveTo(300 + startX * 80, 280);
+      ctx.moveTo(width/2 + startX * 80, height - 20);
       for (let x = startX; x < endX; x += 0.01) {
         let y = Math.exp(-x*x / 2) / Math.sqrt(2 * Math.PI);
-        ctx.lineTo(300 + x * 80, 280 - y * 600);
+        ctx.lineTo(width/2 + x * 80, height - 20 - y * (height - 50) * 2.5);
       }
-      ctx.lineTo(300 + endX * 80, 280);
+      ctx.lineTo(width/2 + endX * 80, height - 20);
       ctx.fillStyle = color;
       ctx.lineWidth = 0;
       ctx.fill();
@@ -152,9 +156,9 @@
 
       // draw separating line
       ctx.beginPath();
-      ctx.moveTo(300 + startX * 80, 280);
+      ctx.moveTo(width/2 + startX * 80, height - 20);
       let startY = Math.exp(-startX*startX / 2) / Math.sqrt(2 * Math.PI);
-      ctx.lineTo(300 + startX * 80, 280 - startY * 600);
+      ctx.lineTo(width/2 + startX * 80, height - 20 - startY * (height - 50) * 2.5);
       ctx.strokeStyle = 'blue';
       ctx.lineWidth = 1;
       ctx.stroke();
@@ -168,29 +172,37 @@
       let textY = Math.exp(-textX*textX / 2) / Math.sqrt(2 * Math.PI);
       if (endX < 0) {
         ctx.textAlign = 'right';
+        ctx.fillText(partyName, width/2 + textX * 80, height - 30 - textY * (height - 50) * 2.5);
       } else if (startX > 0) {
         ctx.textAlign = 'left';
+        ctx.fillText(partyName, width/2 + textX * 80, height - 30 - textY * (height - 50) * 2.5);
       } else {
         ctx.textAlign = 'center';
-        textY = 0.42;
+        ctx.fillText(partyName, width/2 + textX * 80, 10);
       }
-      ctx.fillText(partyName, 300 + textX * 80, 270 - textY * 600);
     }
   }
 
   function updateDisplay()
   {
-    var ctx = document.getElementById('canvas').getContext('2d');
-    ctx.clearRect(0, 0, 600, 300);
+    $('#canvas').attr('width', $(window).width() - 30);
+    $('#canvas').attr('height', Math.min($(window).height() * 0.75 - 30, Math.min($(window).width()*2/3 - 20, 500)));
+
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     var parties = [];
     $('#partiesList li').each(function(elt) {parties.push($(this).text());});
-    drawAreas(ctx, parties);
-    drawAxis(ctx);
-    drawCurve(ctx);
+    drawAreas(ctx, canvas.width, canvas.height, parties);
+    drawAxis(ctx, canvas.width, canvas.height);
+    drawCurve(ctx, canvas.width, canvas.height);
   }
 
   $(function() {
+    $(window).resize(function() {
+      updateDisplay();
+    });
     updateDisplay();
     Sortable.create(document.getElementById('partiesList'),
                     {onUpdate: updateDisplay});
@@ -200,7 +212,7 @@
 <body>
 <h1 style="text-align: center">בחירות 2015</h1>
 <div style="text-align: center">
-  <canvas id="canvas" width="600" height="300"></canvas>
+  <canvas id="canvas"></canvas>
   <div>סטיות תקן</div>
 </div>
 <div style="direction: rtl">

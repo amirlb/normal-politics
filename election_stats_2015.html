@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>תוצאות בחירות 2023</title>
+<title>תוצאות בחירות 2015</title>
 <style>
   .rotate {
     -webkit-transform: rotate(-90deg);
@@ -25,23 +25,22 @@
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js" integrity="sha512-Eezs+g9Lq4TCCq0wae01s9PuNWzHYoCMkE97e2qdkYthpI0pzC3UGB03lgEHn2XM85hDOUF6qgqqszs+iXU4UA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://rubaxa.github.io/Sortable/Sortable.js"></script>
 <script>
-  // With more than 50000 votes in the 2023 elections
+  // With more than 10000 votes in the 2015 elections
   var partiesVoteCount = {
-    "הליכוד": 1115366,
-    "יש עתיד": 847435,
-    "הציונות הדתית + עוצמה יהודית": 516470,
-    "המחנה הממלכתי": 432482,
-    "ש\"ס": 392964,
-    "יהדות התורה": 280194,
-    "ישראל ביתנו": 213687,
-    "רע\"ם": 194047,
-    "חד\"ש-תע\"ל": 178835,
-    "העבודה": 175992,
-    "מרצ": 150793,
-    "בל\"ד": 138617,
-    "הבית היהודי": 56775
+    "הליכוד": 985408,
+    "המחנה הציוני": 786313,
+    "הרשימה המשותפת": 446583,
+    "יש עתיד": 371602,
+    "כולנו": 315360,
+    "הבית היהודי": 283910,
+    "ש\"ס": 241613,
+    "ישראל ביתנו": 214906,
+    "יהדות התורה": 210143,
+    "מרצ": 165529,
+    "יחד": 125158,
+    "עלה ירוק": 47180
   };
 
   function drawAxis(ctx, width, height)
@@ -211,26 +210,25 @@
 </script>
 </head>
 <body>
-<h1 style="text-align: center">בחירות 2023</h1>
+<h1 style="text-align: center">בחירות 2015</h1>
 <div style="text-align: center">
   <canvas id="canvas"></canvas>
   <div>סטיות תקן</div>
 </div>
 <div style="direction: rtl">
   <ul id="partiesList">
-    <li>בל"ד</li>
-    <li>חד"ש-תע"ל</li>
-    <li>רע"ם</li>
+    <li>הרשימה המשותפת</li>
+    <li>עלה ירוק</li>
     <li>מרצ</li>
-    <li>העבודה</li>
+    <li>המחנה הציוני</li>
     <li>יש עתיד</li>
-    <li>המחנה הממלכתי</li>
+    <li>כולנו</li>
     <li>יהדות התורה</li>
     <li>הליכוד</li>
     <li>ש"ס</li>
     <li>ישראל ביתנו</li>
     <li>הבית היהודי</li>
-    <li>הציונות הדתית + עוצמה יהודית</li>
+    <li>יחד</li>
   </ul>
 </div>
 </body>
